@@ -9,6 +9,9 @@ class Node:
         print('is_leaf: ', self.is_leaf)
         print('keys: ', self.keys[0:self.n_keys])
         print('child: ', self.child)
+        print("n_keys: ", self.n_keys)
+        print("len(keys): ", len(self.keys))
+        print('\n')
 
 
 class BTree:
@@ -47,19 +50,32 @@ class BTree:
         # shift relative right ones in node one place right
 
         if ith_child == node.n_keys:  # if it is the end child
-            # if there's dummy space
-
-            node.child.append(right_child)
-            node.keys.append(left_child.keys[self.degree - 1])
+            # if there's no dummy space
+            if len(node.keys) == node.n_keys:
+                node.child.append(right_child)
+                node.keys.append(left_child.keys[self.degree - 1])  # use the first dummy node, i.e. the new root
+            else:
+                node.child[node.n_keys + 1] = right_child
+                node.keys[node.n_keys] = left_child.keys[self.degree - 1]
             node.n_keys += 1
             return
 
-        node.child.append(node.child[node.n_keys])
+        # if no dummy space
+        if len(node.keys) == node.n_keys:
+            node.child.append(node.child[node.n_keys])
+        else:  # dummy space remaining
+            node.child[node.n_keys + 1] = node.child[node.n_keys]
+
         for j in range(node.n_keys - 1, ith_child, -1):
             node.child[j + 1] = node.child[j]
         node.child[ith_child + 1] = right_child
+
         # shift keys one place right
-        node.keys.append(node.chid[node.n_keys - 1])
+        # if no dummy space
+        if len(node.keys) == node.n_keys:
+            node.keys.append(node.chid[node.n_keys - 1])
+        else:
+            node.keys[node.n_keys] = node.chid[node.n_keys - 1]
         for j in range(node.n_keys - 1, ith_child - 1, -1):
             node.keys[j + 1] = node.keys[j]
         node.keys[ith_child] = left_child.keys[self.degree - 1]
@@ -79,15 +95,32 @@ class BTree:
 
         # base case, insert directly
         if node.is_leaf:
+            # if key is the biggest, insert at the right side directly
             if key > node.keys[node.n_keys - 1]:
-                node.keys.append(key)
+                # if no dummy space
+                if len(node.keys) == node.n_keys:
+                    node.keys.append(key)
+                else:
+                    node.keys[node.n_keys] = key
                 node.n_keys += 1
+                return
             else:
-                node.keys.append(node.keys[node.n_keys - 1]) # 0 .. n_keys after appending
+                if len(node.keys) == node.n_keys:  # no dummy space
+                    node.keys.append(node.keys[node.n_keys - 1])  # 0 .. n_keys after appending
+                else:
+                    node.keys[node.n_keys] = node.keys[node.n_keys - 1]
+
+                if i == 0:
+                    node.keys[0] = key
+                    node.n_keys += 1
+                    return
+
                 while i >= 1 and key < node.keys[i]:
                     node.keys[i] = node.keys[i - 1]
                     i -= 1
+
                 node.keys[i + 1] = key  # replace the 'i-1' above
+
                 node.n_keys += 1
             # DISK-WRITE(node)
         else:
@@ -100,6 +133,7 @@ class BTree:
                 self.__split_child(node, i)
                 if key > node.keys[i]:
                     i += 1
+            # print("ith-child: ", i)
             self.__insert_nonfull(node.child[i], key)
 
     def search(self, search_key):
@@ -114,31 +148,41 @@ class BTree:
             self.__insert_nonfull(self.root, key)
         else:
             self.__insert_nonfull(root, key)
-            pass
+
 
 # TODO:
-#  1. solve dummy deletion and later append conflict
+#  (DONE) 1. solve dummy deletion and later append conflict
 #  - compare list length with the length in the record
+#  2. Tests on higher degree B Tree
 
 
-## block test
-btree = BTree(2)
-btree.insert(1)
-btree.insert(6)
-# insert between
-btree.insert(4)
+# ## block test
+# btree = BTree(2)
+# btree.insert(1)
+# btree.insert(6)
+# # insert between
+# btree.insert(4)
+#
+# # should split child
+# btree.insert(7)
+#
+# # another split right side
+# btree.insert(9)
+# btree.insert(5)
+# #
+#
+# btree.insert(8)
+# btree.insert(10)
+# btree.insert(11)
+# btree.insert(12)
+# #print("inserting 2:")
+# #btree.insert(2)
+#
+# btree.root.display()
+# for c in btree.root.child:
+#     c.display()
 
-# should split child
-btree.insert(7)
 
-# another split right side
-btree.insert(9)
-btree.insert(10)
-
-btree.root.display()
-btree.root.child[0].display()
-btree.root.child[1].display()
-btree.root.child[2].display()
 
 
 
