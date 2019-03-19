@@ -1,7 +1,6 @@
 import json
 from term import Term
 
-
 class Node:
     def __init__(self, is_leaf=True, file_index=-1):
         self.file_index = file_index
@@ -59,6 +58,7 @@ class Node:
         with open('data/nodes/node_{0}'.format(self.file_index), 'r') as infile:
             self.__unjsonfy(json.load(infile))
             infile.close()
+
 
 class BTree:
     def __init__(self, degree, node_index=0, root_file_path='data/root'):
@@ -352,7 +352,6 @@ def test_disk_read():
 
     # test: load as list
     print(root.keys[1])
-
 
 # test_disk_write()
 # test_disk_read()

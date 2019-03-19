@@ -37,11 +37,25 @@ class ShakeCrawler(crawler.Crawler):
     # index the shakespeare page by levels
     def crawl_all(self):
         # get relative links of the level 0 index
-        self.get_relative_links('')
+        relative_links = self.get_relative_links('')
 
-        self.__crawl_news_html()
+        # crawl all the links on the index page
+        for link in relative_links:
+            if not self.bdict.is_page_crawled(link):
+                self.analyze_page(link, self.bdict.insert_new_link(link))
+
+        # crawl the first 3 columns
+        # link3 = [link for link in relative_links if link.find('/index.html') != -1]
+        #
+        # for link in link3:
+        #     if not self.bdict.is_page_crawled()
+
+        # print(link3)
+
+        # self.__crawl_news_html()
 
         # self.__crawl_first3_colums()
+
         #
         # self.__crawl_poetry()
 
@@ -50,7 +64,14 @@ class ShakeCrawler(crawler.Crawler):
         # from html recognize paragraphs
         html = self.crawl_html(relative_link)
         soup = BeautifulSoup(html, 'html.parser')
-        page = soup.find('title').getText() + soup.find('p').getText()
+        page = ''
+        title = soup.find('title')
+        if title:
+            page = page + title.getText()
+        p = soup.find('p')
+        if p:
+            page = page + p.getText()
+
        # print(page)
 
         word_tokens = word_tokenize(page)
@@ -88,19 +109,6 @@ class ShakeCrawler(crawler.Crawler):
             # print('link_index', link_index)
             count += 1
 
-
-
-
-
-
-
-    def __crawl_news_html(self):
-        # print()
-        pass
-
-
-
-
 # block tests
 def test_crawl_html():
     sc = ShakeCrawler()
@@ -123,4 +131,14 @@ def test_analyze_page():
 # test_crawl_relative_links()
 
 
-test_analyze_page()
+# test_analyze_page()
+
+# sc = ShakeCrawler()
+# sc.crawl_all()
+
+
+def crawl():
+    sc = ShakeCrawler()
+    sc.crawl_all()
+
+crawl()
