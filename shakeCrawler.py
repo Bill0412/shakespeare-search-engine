@@ -10,7 +10,20 @@ class ShakeCrawler(crawler.Crawler):
     # get all the links in the page previously crawled
 
 
+# block tests
+def test_crawl_html():
+    sc = ShakeCrawler()
+    print(sc.crawl_html('allswell/allswell.4.1.html'))
 
-# tests
-sc = ShakeCrawler()
-print(sc.crawl_page('allswell/allswell.4.1.html'))
+
+def test_crawl_relative_links():
+    sc = ShakeCrawler()
+    # get the links on the first page
+    print(sc.get_relative_links(''))
+
+    # when no link on the page
+    print(sc.get_relative_links('allswell/allswell.4.1.html'))
+
+
+test_crawl_relative_links()
+

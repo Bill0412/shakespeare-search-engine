@@ -49,14 +49,17 @@ def test_disk_read():
 
 
 # TODO:
-#  1. Index info file update
+#  1. Index info file update (done)
+#  to test it: delete all files(keep the directories, then perform test 1 & 2
 def test_index_info_read():
     index = Index()
     print(index.lru_size)
     index.disk_write()
 
 
+# test 1
 # test_disk_write()
+# test 2
+# test_disk_read()
 
-test_disk_read()
 # test_index_info_read()

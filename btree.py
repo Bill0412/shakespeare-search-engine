@@ -1,5 +1,4 @@
 import json
-import pathlib
 from term import Term
 
 

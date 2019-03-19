@@ -48,7 +48,8 @@ class Crawler:
             tags = soup('a')
             for tag in tags:
                 href = tag.get('href', None)
-                if 'http' not in href:
+
+                if href and 'http' not in href:
                     links.append(href)
 
             return links
@@ -59,27 +60,14 @@ class Crawler:
         return 'Error Relative Links & Bytes Supported Only'
 
 
-
-
-
-
-
-# find all the links in the main page
-
-    # filter out the useless
-    # parse every word
-    # visit every page for the play
-        # act-scene
-        # entire play
-
-
 # # block test
 # recursive crawl
-crawler = Crawler('shakespeare.mit.edu')
-links = crawler.get_relative_links('Poetry/LoversComplaint.html')
-print(links)
-# end of recursive get links
-links = crawler.get_relative_links('allswell/index.html')
-print(links)
+def test_crawl():
+    crawler = Crawler('shakespeare.mit.edu')
+    links = crawler.get_relative_links('Poetry/LoversComplaint.html')
+    print(links)
+    # end of recursive get links
+    links = crawler.get_relative_links('allswell/index.html')
+    print(links)
 
 
