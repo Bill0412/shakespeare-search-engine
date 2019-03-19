@@ -56,7 +56,6 @@ class Node:
             infile.close()
 
 
-
 class BTree:
     def __init__(self, degree, node_index=0, root_file_path='data/root'):
 
@@ -105,12 +104,10 @@ class BTree:
     def __is_in_lru(self, node):
         if node == self.root:
             return True
-        else:
-            return node in self.lru_list
+        return node in self.lru_list
 
     def __lru_high_priority(self, node):
-        self.lru_list.pop(self.lru_list.index(node))
-        self.lru_list.append(node)
+        self.lru_list.append(self.lru_list.pop(self.lru_list.index(node)))
 
     def __generate_node_index(self):
         self.node_index += 1
@@ -133,7 +130,7 @@ class BTree:
             # DISK-READ(node.child[i])
             # if the child is not in buffer, read it firstly
             if not self.__is_in_lru(node.child[i]):
-                node.child[i] = Node()
+                node.child[i] = Node(file_index=node.child_index[i])
                 node.child[i].disk_read()
                 self.__insert_lru(node.child[i])
             else:
@@ -250,17 +247,18 @@ class BTree:
             # i
             if not self.__is_in_lru(node.child[i]):
                 # if already created
-                # TODO: fix node_-1
+                # TODO: fix node_-1 (done)
                 # if pathlib.Path('data/nodes/node_{0}'.format).is_file():
                 # if not created yet
-                node.child[i] = Node()
+                node.child[i] = Node(file_index=node.child_index[i])
                 node.child[i].disk_read()
-                if not self.__is_in_lru(node.child[i]):
-                    self.__insert_lru(node.child[i])
+                self.__insert_lru(node.child[i])
+                # TODO:
+                #  1. Fix LRU List Empty
+                #  2. Index Node not splitting: Check B Tree Node (Done)
             else:
                 # make high priority
-                self.lru_list.pop(self.lru_list.index(node.child[i]))
-                self.lru_list.append(node.child[i])
+                self.__lru_high_priority(node.child[i])
 
             if node.child[i].n_keys == (2 * self.degree - 1):
                 self.__split_child(node, i)
@@ -276,7 +274,7 @@ class BTree:
         root = self.root
         if self.root.n_keys == 2 * self.degree - 1:
             self.root = Node(False, 0)
-            self.__insert_lru(self.root)
+            self.__insert_lru(root)
             root.file_index = self.__generate_node_index()
             self.root.child.append(root)  # original root as left child
             self.root.child_index.append(root.file_index)

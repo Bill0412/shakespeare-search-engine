@@ -1,6 +1,5 @@
 import btree
 import pathlib
-import json
 
 
 class Term:
@@ -63,7 +62,15 @@ class Index(btree.BTree):
 
 index = Index()
 index.insert(Term('hi'))
+index.insert(Term('ai'))
+index.insert(Term('wow'))
+print('index.lru_list: ', index.lru_list)
+index.insert(Term('hhh'))
+index.insert(Term('before split'))
+index.insert(Term('split'))
 index.root.display()
 index.root.disk_write()
+index.root.child[0].disk_write()
+index.root.child[1].disk_write()
 
 # index =
