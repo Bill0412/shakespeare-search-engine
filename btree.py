@@ -1,5 +1,6 @@
 import json
 import pathlib
+from term import Term
 
 
 class Node:
@@ -31,7 +32,7 @@ class Node:
         # d['keys'] = self.keys[0:self.n_keys]
         d['keys'] = list(map(lambda key: key.jsonfy(), self.keys[0:self.n_keys]))
         d['child_index'] = self.child_index
-
+        print('d: ', d)
         return d
 
     # get the node data from json document
@@ -40,9 +41,11 @@ class Node:
         self.is_leaf = d['is_leaf']
         self.n_keys = d['n_keys']
         # self.keys = d['keys'].unjsonfy()
-        self.keys = list(map(lambda key: key.unjsonfy(), d['keys']))
+        print(d['keys'])
+        self.keys = list(map(lambda key: Term().unjsonfy(key), d['keys']))
         self.child_index = d['child_index']
-        self.child = self.child_index  # only replaced by node in buffer when necessary
+        # bug fixed: should copy by value, not by reference
+        self.child = self.child_index[:]  # only replaced by node in buffer when necessary
 
     def disk_write(self):
         # write node file header: self.file_index, self.n_keys
@@ -91,7 +94,9 @@ class BTree:
             out.close()
 
     def disk_read(self):
-        with open(self.root_path, 'w') as infile:
+        with open(self.root_path, 'r') as infile:
+            print(self.root_path)
+            # print(infile.read())
             self.__unjsonfy(json.load(infile))
             infile.close()
 
@@ -253,8 +258,8 @@ class BTree:
                 node.child[i] = Node(file_index=node.child_index[i])
                 node.child[i].disk_read()
                 self.__insert_lru(node.child[i])
-                # TODO:
-                #  1. Fix LRU List Empty
+                # TODO: (No issue at all!)
+                #  1. Fix LRU List Empty (Done)
                 #  2. Index Node not splitting: Check B Tree Node (Done)
             else:
                 # make high priority

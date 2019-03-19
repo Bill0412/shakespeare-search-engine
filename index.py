@@ -1,47 +1,6 @@
 import btree
 import pathlib
-
-
-class Term:
-    def __init__(self, term):
-        self.term = term
-        self.times = 0
-        self.occur = dict()
-
-    def jsonfy(self):
-        d = dict()
-        d['term'] = self.term
-        d['times'] = self.times
-        d['occur'] = self.occur
-        return d
-
-    def unjsonfy(self, d):
-        self.term = d['term']
-        self.times = d['times']
-        self.occur = d['occur']
-
-    # define operations for the keys(terms),
-    # should only compare the word(term) field
-    def __lt__(self, other):
-        return self.term < other.term
-
-    def __le__(self, other):
-        return self.term <= other.term
-
-    def __gt__(self, other):
-        return self.term > other.term
-
-    def __ge__(self, other):
-        return self.term >= other.term
-
-    def __eq__(self, other):
-        return self.term == other.term
-
-    def insert(self, doc, ith):
-        if self.dict.has_key(doc):
-            self.dict[doc].append(ith)
-        else:
-            self.dict[doc] = [ith]
+from term import Term
 
 
 
@@ -52,25 +11,52 @@ class Index(btree.BTree):
         self.root_path = 'data/index'
         # if no index yet generated:
         if not pathlib.Path('data/index').is_file():
-            super(Index, self).__init__(degree=3, root_file_path='data/index')
+            super(Index, self).__init__(degree=3, root_file_path=self.root_path)
         else:  # load the root from file
             self.disk_read()
+            self.lru_list = []
 
 
+# block tests
+def test_disk_write():
+    index = Index()
+    index.insert(Term('hi'))
+    index.insert(Term('ai'))
+    index.insert(Term('wow'))
+
+    index.insert(Term('hhh'))
+    index.insert(Term('before split'))
+    index.insert(Term('split'))
+    print('index.lru_list: ', index.lru_list)
+    index.root.display()
+    index.root.disk_write()
+    index.root.child[0].disk_write()
+    index.root.child[1].disk_write()
+    index.disk_write()
 
 
+def test_disk_read():
+    # test_disk_write()
+    index = Index()
+    index.insert(Term('json again'))
+    index.insert(Term('json again'))
+    index.insert(Term('json again'))
 
-index = Index()
-index.insert(Term('hi'))
-index.insert(Term('ai'))
-index.insert(Term('wow'))
-print('index.lru_list: ', index.lru_list)
-index.insert(Term('hhh'))
-index.insert(Term('before split'))
-index.insert(Term('split'))
-index.root.display()
-index.root.disk_write()
-index.root.child[0].disk_write()
-index.root.child[1].disk_write()
+    index.root.disk_write()
+    index.root.child[1].disk_write()
+    index.root.child[2].disk_write()
+    index.disk_write()
 
-# index =
+
+# TODO:
+#  1. Index info file update
+def test_index_info_read():
+    index = Index()
+    print(index.lru_size)
+    index.disk_write()
+
+
+# test_disk_write()
+
+test_disk_read()
+# test_index_info_read()
