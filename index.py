@@ -7,14 +7,18 @@ from term import Term
 
 class Index(btree.BTree):
 
-    def __init__(self):
+    def __init__(self, degree):
         self.root_path = 'data/index'
         # if no index yet generated:
         if not pathlib.Path('data/index').is_file():
-            super(Index, self).__init__(degree=3, root_file_path=self.root_path)
+            super(Index, self).__init__(degree=degree, root_file_path=self.root_path)
         else:  # load the root from file
             self.disk_read()
             self.lru_list = []
+
+    def __del__(self):
+        self.disk_write()
+
 
 
 # block tests
@@ -56,6 +60,13 @@ def test_index_info_read():
     print(index.lru_size)
     index.disk_write()
 
+def test_index_search():
+    index = Index()
+    # should be in root
+    print(index.search(Term('hhh'))[0].file_index)
+    # should be in node_2
+    print(index.search(Term('split'))[0].file_index)
+
 
 # test 1
 # test_disk_write()
@@ -63,3 +74,4 @@ def test_index_info_read():
 # test_disk_read()
 
 # test_index_info_read()
+# test_index_search()

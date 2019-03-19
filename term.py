@@ -35,8 +35,9 @@ class Term:
         return self.term == other.term
 
     def insert(self, doc, ith):
-        if self.dict.has_key(doc):
-            self.dict[doc].append(ith)
+        if doc in self.occur:
+            self.occur[doc].append(ith)
         else:
-            self.dict[doc] = [ith]
+            self.occur[doc] = [ith]
+        self.times += 1
 

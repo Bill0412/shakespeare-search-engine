@@ -9,13 +9,33 @@ class BDict:
         if not pathlib.Path(file_name).is_file():
             self.dict1 = dict()
             self.dict2 = dict()
+            self.link_index = 0
         else:
             # if is found, read from the file
             self.disk_read()
 
-    def insert(self, element1, element2):
+    def __del__(self):
+        self.disk_write()
+
+    def __insert(self, element1, element2):
         self.dict1[element1] = element2
         self.dict2[element2] = element1
+
+    def __generate_link_index(self):
+        self.link_index += 1
+        return self.link_index - 1
+
+    def insert_new_link(self, link):
+        link_index = self.__generate_link_index()
+        self.__insert(link_index, link)
+        return link_index
+
+    def is_page_crawled(self, key):
+        if type(key) == int:  # bug: this does not work
+            return key in self.dict1
+        if type(key) == str:  # works fine
+            return key in self.dict2
+        return False
 
     # returns value of the key
     # returns None if the key does not exist
@@ -35,11 +55,13 @@ class BDict:
 
     def __jsonfy(self):
         d = dict()
+        d['link_index'] = self.link_index
         d['dict1'] = self.dict1
         d['dict2'] = self.dict2
         return d
 
     def __unjsonfy(self, d):
+        self.link_index = d['link_index']
         self.dict1 = d['dict1']
         self.dict2 = d['dict2']
         return self
@@ -58,8 +80,8 @@ class BDict:
 # block tests
 def test_disk_write():
     bdict = BDict()
-    bdict.insert(1, '1.html')
-    bdict.insert(2, '2.html')
+    bdict.insert_new_link('1.html')
+    bdict.insert_new_link('2.html')
     bdict.disk_write()
 
 def test_disk_read():

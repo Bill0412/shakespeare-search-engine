@@ -11,6 +11,9 @@ class Node:
         self.child = []
         self.child_index = []
 
+    def __del__(self):
+        self.disk_write()
+
     def display(self):
         print('is_leaf: ', self.is_leaf)
         print('keys: ', self.keys[0:self.n_keys])
@@ -31,7 +34,7 @@ class Node:
         # d['keys'] = self.keys[0:self.n_keys]
         d['keys'] = list(map(lambda key: key.jsonfy(), self.keys[0:self.n_keys]))
         d['child_index'] = self.child_index
-        print('d: ', d)
+        # print('d: ', d)
         return d
 
     # get the node data from json document
@@ -40,7 +43,7 @@ class Node:
         self.is_leaf = d['is_leaf']
         self.n_keys = d['n_keys']
         # self.keys = d['keys'].unjsonfy()
-        print(d['keys'])
+        # print(d['keys'])
         self.keys = list(map(lambda key: Term().unjsonfy(key), d['keys']))
         self.child_index = d['child_index']
         # bug fixed: should copy by value, not by reference
@@ -57,7 +60,6 @@ class Node:
             self.__unjsonfy(json.load(infile))
             infile.close()
 
-
 class BTree:
     def __init__(self, degree, node_index=0, root_file_path='data/root'):
 
@@ -72,6 +74,9 @@ class BTree:
         self.root_path = root_file_path
         self.lru_list = []
         self.lru_size = 30
+
+    def __del__(self):
+        self.disk_write()
 
     def __jsonfy(self):
         d = dict()
@@ -94,7 +99,7 @@ class BTree:
 
     def disk_read(self):
         with open(self.root_path, 'r') as infile:
-            print(self.root_path)
+            # print(self.root_path)
             # print(infile.read())
             self.__unjsonfy(json.load(infile))
             infile.close()
@@ -103,7 +108,7 @@ class BTree:
         self.lru_list.append(node)
         if len(self.lru_list) > self.lru_size:
             self.lru_list[0].disk_write()
-            self.lru_list.pop[0]
+            self.lru_list.pop(0)
 
     def __is_in_lru(self, node):
         if node == self.root:
@@ -115,18 +120,18 @@ class BTree:
 
     def __generate_node_index(self):
         self.node_index += 1
-        print("generate index: {0}".format(self.node_index - 1))
+        # print("generate index: {0}".format(self.node_index - 1))
         return self.node_index - 1
 
     def __search(self, node, search_key):
         # find the bigger or equal key on the tree
         i = 0
-        while i < node.n_keys and search_key > self.keys[i]:
+        while i < node.n_keys and search_key > node.keys[i]:
             i += 1
 
         # when search_key >= self.keys[i]
         # if this is a leaf node
-        if i < node.n_keys and search_key == self.keys[i]:
+        if i < node.n_keys and search_key == node.keys[i]:
             return node, i
         elif node.is_leaf:
             return None
@@ -188,9 +193,9 @@ class BTree:
         # shift keys one place right
         # if no dummy space
         if len(node.keys) == node.n_keys:
-            node.keys.append(node.chid[node.n_keys - 1])
+            node.keys.append(node.child[node.n_keys - 1])
         else:
-            node.keys[node.n_keys] = node.chid[node.n_keys - 1]
+            node.keys[node.n_keys] = node.child[node.n_keys - 1]
         for j in range(node.n_keys - 1, ith_child - 1, -1):
             node.keys[j + 1] = node.keys[j]
         node.keys[ith_child] = left_child.keys[self.degree - 1]
@@ -207,7 +212,7 @@ class BTree:
         if node.n_keys == 0:
             node.keys.append(key)
             node.n_keys += 1
-            return
+            return node, (node.n_keys - 1)
 
         i = node.n_keys - 1  # the last node
 
@@ -221,17 +226,18 @@ class BTree:
                 else:
                     node.keys[node.n_keys] = key
                 node.n_keys += 1
-                return
+                return node, (node.n_keys - 1)
             else:
                 if len(node.keys) == node.n_keys:  # no dummy space
                     node.keys.append(node.keys[node.n_keys - 1])  # 0 .. n_keys after appending
                 else:
                     node.keys[node.n_keys] = node.keys[node.n_keys - 1]
 
+                # if only 2 nodes, insert after the first node right
                 if i == 0:
                     node.keys[0] = key
                     node.n_keys += 1
-                    return
+                    return node, 0
 
                 while i >= 1 and key < node.keys[i]:
                     node.keys[i] = node.keys[i - 1]
@@ -240,6 +246,7 @@ class BTree:
                 node.keys[i + 1] = key  # replace the 'i-1' above
 
                 node.n_keys += 1
+                return node, (i + 1)
             # DISK-WRITE(node)
             # node.disk_write()
         else:
@@ -269,10 +276,10 @@ class BTree:
                 if key > node.keys[i]:
                     i += 1
             # print("ith-child: ", i)
-            self.__insert_nonfull(node.child[i], key)
+            return self.__insert_nonfull(node.child[i], key)
 
     def search(self, search_key):
-        self.__search(self.root, search_key)
+        return self.__search(self.root, search_key)
 
     def insert(self, key):
         root = self.root
@@ -283,9 +290,8 @@ class BTree:
             self.root.child.append(root)  # original root as left child
             self.root.child_index.append(root.file_index)
             self.__split_child(self.root, 0)
-            self.__insert_nonfull(self.root, key)
-        else:
-            self.__insert_nonfull(root, key)
+            return self.__insert_nonfull(self.root, key)
+        return self.__insert_nonfull(root, key)
 
 
 # TODO:
