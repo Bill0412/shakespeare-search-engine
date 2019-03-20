@@ -66,10 +66,13 @@ class ShakeCrawler(crawler.Crawler):
                     if not self.bdict.is_page_crawled(link1):
                         self.analyze_page(link1, self.bdict.insert_new_link(link1))
 
+        # write data to disk
         with open('data/full', 'w') as out:
             json.dump(obj={'full': full}, fp=out)
             out.close()
 
+        self.index.disk_write()
+        self.bdict.disk_write()
 
     # analyze by term
     def analyze_page(self, relative_link, link_index):

@@ -10,9 +10,6 @@ class Node:
         self.child = []
         self.child_index = []
 
-    def __del__(self):
-        self.disk_write()
-
     def display(self):
         print('is_leaf: ', self.is_leaf)
         print('keys: ', self.keys[0:self.n_keys])
@@ -75,9 +72,6 @@ class BTree:
         self.lru_list = []
         self.lru_size = 30
 
-    def __del__(self):
-        self.disk_write()
-
     def __jsonfy(self):
         d = dict()
         d['node_index'] = self.node_index
@@ -93,6 +87,8 @@ class BTree:
         self.lru_size = d['lru_size']
 
     def disk_write(self):
+        for node in self.lru_list:
+            node.disk_write()
         with open(self.root_path, 'w') as out:
             json.dump(self.__jsonfy(), out)
             out.close()

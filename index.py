@@ -16,10 +16,6 @@ class Index(btree.BTree):
             self.disk_read()
             self.lru_list = []
 
-    def __del__(self):
-        self.disk_write()
-
-
 
 # block tests
 def test_disk_write():

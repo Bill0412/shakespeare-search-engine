@@ -14,9 +14,6 @@ class BDict:
             # if is found, read from the file
             self.disk_read()
 
-    def __del__(self):
-        self.disk_write()
-
     def __insert(self, element1, element2):
         self.dict1[element1] = element2
         self.dict2[element2] = element1

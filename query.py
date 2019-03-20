@@ -19,8 +19,12 @@ else:
 nltk.download('punkt')
 nltk.download('stopwords')
 index = Index()
+
+
 # only one term supported
 def query(search_term):
+    if not search_term:
+        return []
 
     word_tokens = word_tokenize(search_term)
 
@@ -46,22 +50,28 @@ def query(search_term):
             node, ith_child = r
         result += node.keys[ith_child].get_links()
 
+    result.sort(key=lambda x: x[1], reverse=True)
+    result = [r[0] for r in result]
+
     # add full.html
-    base_uri = 'http://shakesepare.mit.edu/'
+    base_uri = 'http://shakespeare.mit.edu/'
     pre_len = len(base_uri)
     full2 = []
     with open('data/full', 'r') as infile:
         full = json.load(infile)['full']
-
+       # print("full: ", full)
         for r in result:
             sub_dir = r[pre_len:]
-            sub_dir = sub_dir[0:sub_dir.find('/')]
-            if sub_dir in full:
-                full_link = base_uri + sub_dir + '/full.html'
-                full2.append(full_link)
-    result += full2
-    # sort by occurrence
-    result.sort(key=lambda x: x[1], reverse=True)
-    return [r[0] for r in result]
+            sub_dir = sub_dir[0:sub_dir.find('/')] + '/'
+            if sub_dir in full and sub_dir not in full2:
+                full2.append(sub_dir)
 
-print(query('love'))
+    result += [base_uri + sub_dir + 'full.html' for sub_dir in full2]
+    # sort by occurrence
+
+    return result
+
+def test_query():
+    print(query('love'))
+
+# test_query()

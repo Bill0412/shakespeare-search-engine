@@ -4,7 +4,7 @@
         <title>Shakespeare Search Engine</title>
     </head>
     <body>
-    <form action = url_for('index') method="post">
+    <form method="post">
     <input type="text" name="search-box" placeholder="What do you want?">
         <button>Search</button>
     </form>
@@ -12,7 +12,7 @@
 
         <ul>
             {% for link in links %}
-                <li>{{ result }}</li>
+            <li><a href="{{ link }}"> {{link}} </a></li>
             {% endfor %}
         </ul>
     </body>
