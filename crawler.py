@@ -46,6 +46,8 @@ class Crawler:
             # Retrieve all of the anchor tags
             links = []
             tags = soup('a')
+            if not tags:
+                return None
             for tag in tags:
                 href = tag.get('href', None)
 

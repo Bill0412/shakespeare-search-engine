@@ -7,7 +7,7 @@ from term import Term
 
 class Index(btree.BTree):
 
-    def __init__(self, degree):
+    def __init__(self, degree=300):
         self.root_path = 'data/index'
         # if no index yet generated:
         if not pathlib.Path('data/index').is_file():

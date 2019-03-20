@@ -5,6 +5,8 @@ from nltk.stem import PorterStemmer
 import nltk
 import ssl
 import string
+import time
+import json
 
 import crawler
 from index import Index
@@ -28,7 +30,7 @@ class ShakeCrawler(crawler.Crawler):
 
     def __init__(self):
         super(ShakeCrawler, self).__init__(self.base_uri)
-        self.index = Index(30)
+        self.index = Index(300)
         self.bdict = BDict()
 
     # get all the links in the page previously crawled
@@ -37,27 +39,37 @@ class ShakeCrawler(crawler.Crawler):
     # index the shakespeare page by levels
     def crawl_all(self):
         # get relative links of the level 0 index
-        relative_links = self.get_relative_links('')
+        full = []
+        relative_links0 = self.get_relative_links('')
 
-        # crawl all the links on the index page
-        for link in relative_links:
-            if not self.bdict.is_page_crawled(link):
-                self.analyze_page(link, self.bdict.insert_new_link(link))
+        # level 0: crawl all the links on the index page
+        if not self.bdict.is_page_crawled('index.html'):
+            self.analyze_page('index.html', self.bdict.insert_new_link('index.html'))
 
-        # crawl the first 3 columns
-        # link3 = [link for link in relative_links if link.find('/index.html') != -1]
-        #
-        # for link in link3:
-        #     if not self.bdict.is_page_crawled()
+        for link0 in relative_links0:
+            # crawl all the pages
+            if not self.bdict.is_page_crawled(link0):
+                self.analyze_page(link0, self.bdict.insert_new_link(link0))
 
-        # print(link3)
+            # level 1
 
-        # self.__crawl_news_html()
+            short_links1 = self.get_relative_links(link0)
+            if short_links1:
+                sub_dir1 = link0[0:(link0.find('/') + 1)]
+                print(sub_dir1)
+                relative_links1 = [sub_dir1 + short_link for short_link in short_links1 if (-1 == short_link.find('/') and short_link != 'full.html')]
+                if 'full.html' in short_links1 and sub_dir1 not in full:
+                    full.append(sub_dir1)
+                print(relative_links1)
+                for link1 in relative_links1:
+                    # crawl all pages
+                    if not self.bdict.is_page_crawled(link1):
+                        self.analyze_page(link1, self.bdict.insert_new_link(link1))
 
-        # self.__crawl_first3_colums()
+        with open('data/full', 'w') as out:
+            json.dump(obj={'full': full}, fp=out)
+            out.close()
 
-        #
-        # self.__crawl_poetry()
 
     # analyze by term
     def analyze_page(self, relative_link, link_index):
@@ -79,12 +91,12 @@ class ShakeCrawler(crawler.Crawler):
 
         stop_words = set(stopwords.words('english'))
 
-        stop_words_filtered = [word for word in word_tokens if word[0] not in string.punctuation]
+        punctuation_filtered = [word for word in word_tokens if word[0] not in string.punctuation]
 
         ps = PorterStemmer()
 
         # filter stop_words & word stemming
-        filtered_words = [ps.stem(word).strip('.') for word in stop_words_filtered if word not in stop_words]
+        filtered_words = [ps.stem(word).strip('.') for word in punctuation_filtered if word not in stop_words]
 
         # print(filtered_words)
         # for comparison
@@ -137,8 +149,15 @@ def test_analyze_page():
 # sc.crawl_all()
 
 
-def crawl():
-    sc = ShakeCrawler()
-    sc.crawl_all()
+def crawl(times):
+    try:
+        if not times:
+            return
+        sc = ShakeCrawler()
+        sc.crawl_all()
+    except:
+        time.sleep(1)
+        crawl(times - 1)
 
-crawl()
+
+crawl(10)
