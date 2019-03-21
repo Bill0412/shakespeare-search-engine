@@ -48,7 +48,7 @@ def query(search_term):
         r = index.search(Term(term))
         if r:
             node, ith_child = r
-        result += node.keys[ith_child].get_links()
+            result += node.keys[ith_child].get_links()
 
     result.sort(key=lambda x: x[1], reverse=True)
     result = [r[0] for r in result]
