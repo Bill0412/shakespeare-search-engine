@@ -46,6 +46,8 @@ def query(search_term):
     result = []
     for term in filtered_words:
         r = index.search(Term(term))
+        # print('Term: ', term)
+        # print('r: ', r)
         if r:
             node, ith_child = r
             result += node.keys[ith_child].get_links()
@@ -68,7 +70,7 @@ def query(search_term):
 
     result += [base_uri + sub_dir + 'full.html' for sub_dir in full2]
     # sort by occurrence
-
+    # print('result', result)
     return result
 
 def test_query():

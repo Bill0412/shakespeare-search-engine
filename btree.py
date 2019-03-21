@@ -89,6 +89,7 @@ class BTree:
     def disk_write(self):
         for node in self.lru_list:
             node.disk_write()
+        self.root.disk_write()
         with open(self.root_path, 'w') as out:
             json.dump(self.__jsonfy(), out)
             out.close()
