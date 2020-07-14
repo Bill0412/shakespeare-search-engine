@@ -4,7 +4,7 @@ Note: this is a simple search engine that crawls the webpage http://shakespeare.
 indexes the pages and provides a web interface for searching.
 
 ## deployment
-This search engine is deployed at http://shakespeare.fenghe.us/, and the more detailed tutorial is at https://fenghe.us/try-out-my-tiny-search-engine-from-start/.
+This search engine is deployed at http://shakespeare.kickstart.best/, and the more detailed tutorial is at https://fenghe.us/try-out-my-tiny-search-engine-from-start/.
 
 ## How to test the code
 There are many dependencies that may not be easy to install for novices to python, so it is 
